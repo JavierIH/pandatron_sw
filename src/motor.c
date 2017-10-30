@@ -61,22 +61,3 @@ void set_sense(motor_t motor, motor_sense_t sense){
         }
     }
 }
-
-void update_speed(motor_t motor){
-    if (motor == MOTOR_R){
-        _motor_speed_r = get_encoder_delta(ENCODER_R); // /sample time 1ms
-    }
-    else if (motor == MOTOR_L){
-        _motor_speed_l = get_encoder_delta(ENCODER_L);
-    }
-}
-
-
-int32_t get_speed(motor_t motor){
-    if (motor == MOTOR_R){
-        return _motor_speed_r;
-    }
-    else if (motor == MOTOR_L){
-        return _motor_speed_l;
-    }
-}

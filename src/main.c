@@ -6,8 +6,9 @@
 #include "pwm.h"
 #include "gpio.h"
 #include "motor.h"
-#include "encoder.h"
+#include "infrared.h"
 
+#define TRIM 5
 
 static void MX_ADC1_Init(void);
 void setup(void);
@@ -29,42 +30,42 @@ int main(void) {
     uint16_t before = 0;
     uint16_t after = 0;
 
-    while(!get_button(BUTTON_START));
-    int x=40;
-    while (1){
-        set_led(LED_1, LED_ON);
-        set_led(LED_6, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_2, LED_ON);
-        set_led(LED_1, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_3, LED_ON);
-        set_led(LED_2, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_4, LED_ON);
-        set_led(LED_3, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_5, LED_ON);
-        set_led(LED_4, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_6, LED_ON);
-        set_led(LED_5, LED_OFF);
-        HAL_Delay(x*2);
+    //while(get_button(BUTTON_START));
+    int x=0;
+    int speed=0;
+    while (!get_button(BUTTON));
+        while (1){
 
-        set_led(LED_5, LED_ON);
-        set_led(LED_6, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_4, LED_ON);
-        set_led(LED_5, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_3, LED_ON);
-        set_led(LED_4, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_2, LED_ON);
-        set_led(LED_3, LED_OFF);
-        HAL_Delay(x);
-        set_led(LED_1, LED_ON);
-        set_led(LED_2, LED_OFF);
+        set_led(LED, get_button(BUTTON));
+        int i;
+        int position =  -6*_adc_buf[0]
+                        -4*_adc_buf[1]
+                        -3*_adc_buf[2]
+                        -1*_adc_buf[3]
+                        +1*_adc_buf[4]
+                        +2*_adc_buf[5]
+                        +3*_adc_buf[6]
+                        +6*_adc_buf[7];
+        position += 140;
+        position /=250;
+        sprintf(text_buffer,"Position: %d\n\r",position);
+        send_uart(text_buffer);
+        /*for (i=0; i<8; i++){
+            sprintf(text_buffer,"IR[%d]: %d\t",i, _adc_buf[i]);
+            send_uart(text_buffer);
+        }*/
+        sprintf(text_buffer,"\n\r");
+        send_uart(text_buffer);
+        set_pwm(PWM_1, 250+position+TRIM);
+        set_pwm(PWM_2, 250-position-TRIM);
+        /*speed +=10;
+        if(speed == 1000){
+            speed = 0;
+            HAL_Delay(5000);
+            //set_pwm(PWM_1, speed);
+            //set_pwm(PWM_2, speed);
+            HAL_Delay(10000);
+        }*/
         HAL_Delay(x);
     }
 }
@@ -78,7 +79,6 @@ void setup(void){
     UART_Init();
     PWM_Init();
     MOTOR_Init();
-    ENCODER_Init();
     IR_Init();
 }
 
@@ -87,11 +87,8 @@ void SysTick_Handler(void){ // function executed each 1ms
 
     switch (task_tick++) { // each case is executed each 20ms
         case 0:
-            update_speed(MOTOR_L);
-            update_speed(MOTOR_R);
             break;
         case 1:
-            //update speed pid
             break;
         //case 2:
             //update turn pid

@@ -3,7 +3,6 @@
 
 #include "stm32f1xx_hal.h"
 #include "pwm.h"
-#include "encoder.h"
 
 typedef enum {MOTOR_R, MOTOR_L} motor_t;
 typedef enum {FORWARD, BACKWARD, BRAKE, FREE} motor_sense_t;

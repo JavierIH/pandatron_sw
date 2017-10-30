@@ -3,13 +3,14 @@
 
 #include "stm32f1xx_hal.h"
 
-typedef enum {IR_FL, IR_FR, IR_SL, IR_SR} ir_sensor_t;
+uint32_t _adc_buf[8];
 
+DMA_HandleTypeDef hdma_adc1;
 ADC_HandleTypeDef hadc1;
 ADC_ChannelConfTypeDef _sConfig;
 
 void IR_Init();
-int get_ir(ir_sensor_t ir);
+uint32_t get_ir(uint8_t ir);
 
 
 #endif // INFRARED_H

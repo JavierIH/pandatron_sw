@@ -1,7 +1,7 @@
 #include "error.h"
 
 void Error_Handler(void){
-    char tbuf[100];
+    /*char tbuf[100];
     sprintf(tbuf,"ERROR HANDLER\n\r");
     send_uart(tbuf);
     while(1){
@@ -19,5 +19,5 @@ void Error_Handler(void){
         set_led(LED_5, LED_ON);
         set_led(LED_6, LED_ON);
         HAL_Delay(50);
-    }
+    }*/
 }
