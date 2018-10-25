@@ -8,65 +8,67 @@
 #include "motor.h"
 #include "infrared.h"
 
-#define TRIM 5
+
+#define TRIM        140
+#define KP          0.03 //0.015
+#define KI          0
+#define KD          10
+#define BASE_SPEED  500 //330
+#define MAX_SPEED   800
 
 static void MX_ADC1_Init(void);
 void setup(void);
-//void SysTick_Handler(void);
 
 int main(void) {
     setup();
-    char text_buffer[200];
-    sprintf(text_buffer,"running...\n\r");
-    int i=0;
-    int up=1;
-    int mtime=30;
     set_sense(MOTOR_R, FORWARD);
     set_sense(MOTOR_L, FORWARD);
+    set_led(LED, LED_ON);
 
+    int p = 0;
+    int p_ref = 0;
+    int i = 0;
+    int d = 0;
+    int speed_L = 0;
+    int speed_R = 0;
 
-
-    int32_t delta = 0;
-    uint16_t before = 0;
-    uint16_t after = 0;
-
-    //while(get_button(BUTTON_START));
-    int x=0;
-    int speed=0;
     while (!get_button(BUTTON));
-        while (1){
+    set_led(LED, LED_OFF);
+    HAL_Delay(5000);
 
-        set_led(LED, get_button(BUTTON));
-        int i;
-        int position =  -6*_adc_buf[0]
-                        -4*_adc_buf[1]
-                        -3*_adc_buf[2]
-                        -1*_adc_buf[3]
-                        +1*_adc_buf[4]
-                        +2*_adc_buf[5]
-                        +3*_adc_buf[6]
-                        +6*_adc_buf[7];
-        position += 140;
-        position /=250;
-        sprintf(text_buffer,"Position: %d\n\r",position);
-        send_uart(text_buffer);
+    while (1){
         /*for (i=0; i<8; i++){
             sprintf(text_buffer,"IR[%d]: %d\t",i, _adc_buf[i]);
             send_uart(text_buffer);
-        }*/
-        sprintf(text_buffer,"\n\r");
+        }
+        sprintf(text_buffer,"Position: %d\n\r",position);
         send_uart(text_buffer);
-        set_pwm(PWM_1, 250+position+TRIM);
-        set_pwm(PWM_2, 250-position-TRIM);
-        /*speed +=10;
-        if(speed == 1000){
-            speed = 0;
-            HAL_Delay(5000);
-            //set_pwm(PWM_1, speed);
-            //set_pwm(PWM_2, speed);
-            HAL_Delay(10000);
-        }*/
-        HAL_Delay(x);
+        */
+
+        p = -4*_adc_buf[0]
+            -3*_adc_buf[1]
+            -2*_adc_buf[2]
+            -1*_adc_buf[3]
+            +1*_adc_buf[4]
+            +2*_adc_buf[5]
+            +3*_adc_buf[6]
+            +4*_adc_buf[7];
+        p += TRIM;
+        i = i+p;
+        d = p-p_ref;
+        p_ref = p;
+
+        speed_L = BASE_SPEED + (p*KP + i*KI + d*KD);
+        speed_R = BASE_SPEED - (p*KP + i*KI + d*KD);
+
+        if (speed_L > MAX_SPEED) speed_L = MAX_SPEED;
+        else if (speed_L < 0) speed_L = 0;
+        if (speed_R > MAX_SPEED) speed_R = MAX_SPEED;
+        else if (speed_R < 0) speed_R = 0;
+
+        set_pwm(PWM_1, speed_L);
+        set_pwm(PWM_2, speed_R);
+
     }
 }
 
